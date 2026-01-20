@@ -14,9 +14,11 @@ import (
 )
 
 type Server struct {
-	db     *db.ServerDB
-	jwt    *auth.JWTManager
-	router *chi.Mux
+	db          *db.ServerDB
+	jwt         *auth.JWTManager
+	router      *chi.Mux
+	authLimiter *RateLimiter
+	apiLimiter  *RateLimiter
 }
 
 type contextKey string
@@ -25,9 +27,11 @@ const userContextKey contextKey = "user"
 
 func New(database *db.ServerDB, jwtManager *auth.JWTManager) *Server {
 	s := &Server{
-		db:     database,
-		jwt:    jwtManager,
-		router: chi.NewRouter(),
+		db:          database,
+		jwt:         jwtManager,
+		router:      chi.NewRouter(),
+		authLimiter: NewAuthRateLimiter(),
+		apiLimiter:  NewAPIRateLimiter(),
 	}
 	s.setupRoutes()
 	return s
@@ -41,20 +45,33 @@ func (s *Server) setupRoutes() {
 	// Health check
 	s.router.Get("/health", s.healthHandler)
 
-	// Auth routes (public)
+	// Auth routes (public) - stricter rate limiting
 	s.router.Route("/api/auth", func(r chi.Router) {
+		r.Use(s.authLimiter.Middleware)
 		r.Post("/login", s.loginHandler)
 		r.Post("/register", s.registerHandler)
 	})
 
-	// Protected routes
+	// Protected routes - general rate limiting
 	s.router.Route("/api/notes", func(r chi.Router) {
 		r.Use(s.authMiddleware)
+		r.Use(s.apiLimiter.Middleware)
 		r.Get("/", s.listNotesHandler)
 		r.Get("/{id}", s.getNoteHandler)
 		r.Post("/", s.upsertNoteHandler)
 		r.Delete("/{id}", s.deleteNoteHandler)
 		r.Get("/sync", s.syncNotesHandler)
+	})
+
+	// Folder routes
+	s.router.Route("/api/folders", func(r chi.Router) {
+		r.Use(s.authMiddleware)
+		r.Use(s.apiLimiter.Middleware)
+		r.Get("/", s.listFoldersHandler)
+		r.Get("/{id}", s.getFolderHandler)
+		r.Post("/", s.upsertFolderHandler)
+		r.Delete("/{id}", s.deleteFolderHandler)
+		r.Get("/sync", s.syncFoldersHandler)
 	})
 }
 

@@ -26,6 +26,6 @@ auto_save_interval: 3s
 # 4. Token will be saved automatically after first successful login
 server:
   enabled: false
-  url: "http://localhost:8080"
+  url: "http://localhost:5689"
   username: ""
   # token: ""  # Auto-generated after login, don't edit manually

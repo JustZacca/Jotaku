@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// Configuration from environment
-	port := getEnv("PORT", "8080")
+	port := getEnv("PORT", "5689")
 	dbPath := getEnv("DB_PATH", "/data/notes.db")
 	jwtSecret := getEnv("JWT_SECRET", "")
 

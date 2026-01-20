@@ -29,9 +29,9 @@ RUN mkdir -p /data
 
 VOLUME ["/data"]
 
-EXPOSE 8080
+EXPOSE 5689
 
 ENV DB_PATH=/data/jotaku.db
-ENV PORT=8080
+ENV PORT=5689
 
 CMD ["/app/jotaku-server"]

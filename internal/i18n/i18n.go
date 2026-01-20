@@ -120,6 +120,7 @@ type Messages struct {
 	KeyTags         string
 	KeyPassword     string
 	KeyParentFolder string
+	KeyCopy         string
 
 	// Prompts
 	MasterPassword string
@@ -128,6 +129,10 @@ type Messages struct {
 	EncryptedDifferentKey string
 	ReadOnly              string
 	NoVersions            string
+
+	// Clipboard
+	Copied      string
+	CopyError   string
 
 	// Sync
 	Syncing     string
@@ -257,6 +262,7 @@ var translations = map[Language]Messages{
 		KeyTags:         "tag",
 		KeyPassword:     "password",
 		KeyParentFolder: "indietro",
+		KeyCopy:         "copia",
 
 		// Prompts
 		MasterPassword: "Password master: ",
@@ -265,6 +271,10 @@ var translations = map[Language]Messages{
 		EncryptedDifferentKey: "Cifrata con altra chiave",
 		ReadOnly:              "Sola lettura",
 		NoVersions:            "Nessuna versione disponibile",
+
+		// Clipboard
+		Copied:    "Copiato nella clipboard",
+		CopyError: "Errore copia",
 
 		// Sync
 		Syncing:     "Sincronizzazione...",
@@ -393,6 +403,7 @@ var translations = map[Language]Messages{
 		KeyTags:         "tags",
 		KeyPassword:     "password",
 		KeyParentFolder: "back",
+		KeyCopy:         "copy",
 
 		// Prompts
 		MasterPassword: "Master password: ",
@@ -401,6 +412,10 @@ var translations = map[Language]Messages{
 		EncryptedDifferentKey: "Encrypted with different key",
 		ReadOnly:              "Read only",
 		NoVersions:            "No versions available",
+
+		// Clipboard
+		Copied:    "Copied to clipboard",
+		CopyError: "Copy error",
 
 		// Sync
 		Syncing:     "Syncing...",

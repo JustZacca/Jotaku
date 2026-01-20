@@ -6,16 +6,16 @@ services:
       context: ..
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "5689:5689"
     volumes:
       - jotaku-data:/data
     environment:
       - DB_PATH=/data/jotaku.db
       - JWT_SECRET=${JWT_SECRET}
-      - PORT=8080
+      - PORT=5689
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5689/health"]
       interval: 30s
       timeout: 10s
       retries: 3

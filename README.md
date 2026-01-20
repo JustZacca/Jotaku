@@ -158,7 +158,7 @@ auto_save_interval: 3s
 # Server sync configuration (optional)
 server:
   enabled: false
-  url: http://localhost:8080
+  url: http://localhost:5689
   username: myuser
   # token: auto-generated after login
 ```
@@ -187,7 +187,7 @@ JWT_SECRET=your-secret-key jotaku-server
 | Variable | Description |
 |----------|-------------|
 | `JWT_SECRET` | Secret key for JWT tokens (min 32 chars) |
-| `PORT` | Server port (default: 8080) |
+| `PORT` | Server port (default: 5689) |
 
 ### Connecting the Client
 
@@ -196,7 +196,7 @@ JWT_SECRET=your-secret-key jotaku-server
 ```yaml
 server:
   enabled: true
-  url: http://your-server.com:8080
+  url: http://your-server.com:5689
   username: your-username
 ```
 

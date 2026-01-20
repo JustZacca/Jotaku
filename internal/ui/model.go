@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -582,6 +583,16 @@ func (m Model) handleNormalKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.passwordInput.Focus()
 			m.passwordTarget = m.currentNote.ID
 			m.passwordTargetType = "note"
+		}
+
+	case key.Matches(msg, m.keys.Copy):
+		if m.currentNote != nil {
+			err := clipboard.WriteAll(m.currentNote.Content)
+			if err != nil {
+				m.syncStatus = t.CopyError
+			} else {
+				m.syncStatus = t.Copied
+			}
 		}
 
 	case key.Matches(msg, m.keys.ParentFolder):

@@ -125,12 +125,13 @@ func (s *Server) registerHandler(w http.ResponseWriter, r *http.Request) {
 // Notes handlers
 
 type NoteResponse struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	Tags      string `json:"tags"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Content        string `json:"content"`
+	Tags           string `json:"tags"`
+	ParentFolderID string `json:"parent_folder_id,omitempty"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
 }
 
 type NoteListResponse struct {
@@ -149,12 +150,13 @@ func (s *Server) listNotesHandler(w http.ResponseWriter, r *http.Request) {
 	response := NoteListResponse{Notes: make([]NoteResponse, len(notes))}
 	for i, n := range notes {
 		response.Notes[i] = NoteResponse{
-			ID:        n.ID,
-			Title:     n.Title,
-			Content:   n.Content,
-			Tags:      n.Tags,
-			CreatedAt: n.CreatedAt.Unix(),
-			UpdatedAt: n.UpdatedAt.Unix(),
+			ID:             n.ID,
+			Title:          n.Title,
+			Content:        n.Content,
+			Tags:           n.Tags,
+			ParentFolderID: n.ParentFolderID,
+			CreatedAt:      n.CreatedAt.Unix(),
+			UpdatedAt:      n.UpdatedAt.Unix(),
 		}
 	}
 
@@ -176,22 +178,24 @@ func (s *Server) getNoteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, NoteResponse{
-		ID:        note.ID,
-		Title:     note.Title,
-		Content:   note.Content,
-		Tags:      note.Tags,
-		CreatedAt: note.CreatedAt.Unix(),
-		UpdatedAt: note.UpdatedAt.Unix(),
+		ID:             note.ID,
+		Title:          note.Title,
+		Content:        note.Content,
+		Tags:           note.Tags,
+		ParentFolderID: note.ParentFolderID,
+		CreatedAt:      note.CreatedAt.Unix(),
+		UpdatedAt:      note.UpdatedAt.Unix(),
 	}, http.StatusOK)
 }
 
 type UpsertNoteRequest struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	Tags      string `json:"tags"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Content        string `json:"content"`
+	Tags           string `json:"tags"`
+	ParentFolderID string `json:"parent_folder_id,omitempty"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
 }
 
 func (s *Server) upsertNoteHandler(w http.ResponseWriter, r *http.Request) {
@@ -218,19 +222,20 @@ func (s *Server) upsertNoteHandler(w http.ResponseWriter, r *http.Request) {
 		updatedAt = time.Unix(req.UpdatedAt, 0)
 	}
 
-	note, err := s.db.UpsertNote(user.ID, req.ID, req.Title, req.Content, req.Tags, createdAt, updatedAt)
+	note, err := s.db.UpsertNote(user.ID, req.ID, req.Title, req.Content, req.Tags, req.ParentFolderID, createdAt, updatedAt)
 	if err != nil {
 		jsonError(w, "failed to save note", http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse(w, NoteResponse{
-		ID:        note.ID,
-		Title:     note.Title,
-		Content:   note.Content,
-		Tags:      note.Tags,
-		CreatedAt: note.CreatedAt.Unix(),
-		UpdatedAt: note.UpdatedAt.Unix(),
+		ID:             note.ID,
+		Title:          note.Title,
+		Content:        note.Content,
+		Tags:           note.Tags,
+		ParentFolderID: note.ParentFolderID,
+		CreatedAt:      note.CreatedAt.Unix(),
+		UpdatedAt:      note.UpdatedAt.Unix(),
 	}, http.StatusOK)
 }
 
@@ -277,12 +282,171 @@ func (s *Server) syncNotesHandler(w http.ResponseWriter, r *http.Request) {
 	response := NoteListResponse{Notes: make([]NoteResponse, len(notes))}
 	for i, n := range notes {
 		response.Notes[i] = NoteResponse{
-			ID:        n.ID,
-			Title:     n.Title,
-			Content:   n.Content,
-			Tags:      n.Tags,
-			CreatedAt: n.CreatedAt.Unix(),
-			UpdatedAt: n.UpdatedAt.Unix(),
+			ID:             n.ID,
+			Title:          n.Title,
+			Content:        n.Content,
+			Tags:           n.Tags,
+			ParentFolderID: n.ParentFolderID,
+			CreatedAt:      n.CreatedAt.Unix(),
+			UpdatedAt:      n.UpdatedAt.Unix(),
+		}
+	}
+
+	jsonResponse(w, response, http.StatusOK)
+}
+
+// Folder handlers
+
+type FolderResponse struct {
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	ParentFolderID string `json:"parent_folder_id,omitempty"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
+}
+
+type FolderListResponse struct {
+	Folders []FolderResponse `json:"folders"`
+}
+
+type UpsertFolderRequest struct {
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	ParentFolderID string `json:"parent_folder_id,omitempty"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
+}
+
+func (s *Server) listFoldersHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	folders, err := s.db.ListFoldersByUser(user.ID)
+	if err != nil {
+		jsonError(w, "failed to list folders", http.StatusInternalServerError)
+		return
+	}
+
+	response := FolderListResponse{Folders: make([]FolderResponse, len(folders))}
+	for i, f := range folders {
+		response.Folders[i] = FolderResponse{
+			ID:             f.ID,
+			Title:          f.Title,
+			ParentFolderID: f.ParentFolderID,
+			CreatedAt:      f.CreatedAt.Unix(),
+			UpdatedAt:      f.UpdatedAt.Unix(),
+		}
+	}
+
+	jsonResponse(w, response, http.StatusOK)
+}
+
+func (s *Server) getFolderHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+	folderID := chi.URLParam(r, "id")
+
+	folder, err := s.db.GetFolder(folderID, user.ID)
+	if err != nil {
+		jsonError(w, "failed to get folder", http.StatusInternalServerError)
+		return
+	}
+	if folder == nil {
+		jsonError(w, "folder not found", http.StatusNotFound)
+		return
+	}
+
+	jsonResponse(w, FolderResponse{
+		ID:             folder.ID,
+		Title:          folder.Title,
+		ParentFolderID: folder.ParentFolderID,
+		CreatedAt:      folder.CreatedAt.Unix(),
+		UpdatedAt:      folder.UpdatedAt.Unix(),
+	}, http.StatusOK)
+}
+
+func (s *Server) upsertFolderHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	var req UpsertFolderRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonError(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Title == "" {
+		jsonError(w, "title required", http.StatusBadRequest)
+		return
+	}
+
+	createdAt := time.Now()
+	if req.CreatedAt > 0 {
+		createdAt = time.Unix(req.CreatedAt, 0)
+	}
+
+	updatedAt := time.Now()
+	if req.UpdatedAt > 0 {
+		updatedAt = time.Unix(req.UpdatedAt, 0)
+	}
+
+	folder, err := s.db.UpsertFolder(user.ID, req.ID, req.Title, req.ParentFolderID, createdAt, updatedAt)
+	if err != nil {
+		jsonError(w, "failed to save folder", http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse(w, FolderResponse{
+		ID:             folder.ID,
+		Title:          folder.Title,
+		ParentFolderID: folder.ParentFolderID,
+		CreatedAt:      folder.CreatedAt.Unix(),
+		UpdatedAt:      folder.UpdatedAt.Unix(),
+	}, http.StatusOK)
+}
+
+func (s *Server) deleteFolderHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+	folderID := chi.URLParam(r, "id")
+
+	if err := s.db.DeleteFolder(folderID, user.ID); err != nil {
+		jsonError(w, "failed to delete folder", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) syncFoldersHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r)
+
+	sinceStr := r.URL.Query().Get("since")
+	var since time.Time
+	if sinceStr != "" {
+		if _, err := time.Parse(time.RFC3339, sinceStr); err == nil {
+			since, _ = time.Parse(time.RFC3339, sinceStr)
+		} else {
+			if n, err := time.ParseDuration(sinceStr); err == nil {
+				since = time.Now().Add(-n)
+			} else {
+				if ts, err := json.Number(sinceStr).Int64(); err == nil {
+					since = time.Unix(ts, 0)
+				}
+			}
+		}
+	}
+
+	folders, err := s.db.GetFoldersSince(user.ID, since)
+	if err != nil {
+		jsonError(w, "failed to get folders", http.StatusInternalServerError)
+		return
+	}
+
+	response := FolderListResponse{Folders: make([]FolderResponse, len(folders))}
+	for i, f := range folders {
+		response.Folders[i] = FolderResponse{
+			ID:             f.ID,
+			Title:          f.Title,
+			ParentFolderID: f.ParentFolderID,
+			CreatedAt:      f.CreatedAt.Unix(),
+			UpdatedAt:      f.UpdatedAt.Unix(),
 		}
 	}
 

@@ -29,6 +29,7 @@ type KeyMap struct {
 	EditTags     key.Binding
 	SetPassword  key.Binding
 	ParentFolder key.Binding
+	Copy         key.Binding
 }
 
 func NewKeyMap() KeyMap {
@@ -126,6 +127,10 @@ func NewKeyMap() KeyMap {
 			key.WithKeys("backspace"),
 			key.WithHelp("Backspace", t.KeyParentFolder),
 		),
+		Copy: key.NewBinding(
+			key.WithKeys("c"),
+			key.WithHelp("c", t.KeyCopy),
+		),
 	}
 }
 
@@ -137,7 +142,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.Enter, k.Edit, k.Escape},
 		{k.New, k.NewFolder, k.Delete, k.Save, k.Search},
-		{k.History, k.EditTags, k.SetPassword, k.Sync},
+		{k.History, k.EditTags, k.SetPassword, k.Sync, k.Copy},
 		{k.Export, k.Import, k.Help, k.Quit},
 	}
 }
