@@ -7,8 +7,8 @@ notes
 notes.exe
 notes-server
 notes-server.exe
-server
-client
+/server
+/client
 *.exe
 *.exe~
 *.dll

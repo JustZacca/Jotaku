@@ -33,6 +33,7 @@ jobs:
 
       - name: Build Linux (amd64)
         run: |
+          mkdir -p dist
           GOOS=linux GOARCH=amd64 go build -o dist/jotaku-linux-amd64 ./cmd/client
           GOOS=linux GOARCH=amd64 go build -o dist/jotaku-server-linux-amd64 ./cmd/server
 
@@ -80,6 +81,7 @@ jobs:
       - name: Build Windows (amd64) with CGO enabled
         run: |
           $env:CGO_ENABLED = "1"
+          New-Item -ItemType Directory -Force dist | Out-Null
           go build -o dist/jotaku-windows-amd64.exe ./cmd/client
           go build -o dist/jotaku-server-windows-amd64.exe ./cmd/server
 
