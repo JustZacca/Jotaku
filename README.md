@@ -244,5 +244,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/nzaccagnino">@nzaccagnino</a>
+  Made with ❤️ by <a href="https://github.com/JustZacca">@JustZacca</a>
 </p>
