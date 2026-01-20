@@ -161,9 +161,6 @@ func (db *DB) UpdateNote(id int64, title, content string, tags []string) error {
 		return fmt.Errorf("failed to update note: %w", err)
 	}
 
-	// Save a version for history
-	_ = db.SaveNoteVersion(id, title, content, tags)
-
 	return nil
 }
 

@@ -807,9 +807,17 @@ func (m Model) saveCurrentNote() tea.Cmd {
 			return nil
 		}
 
-		content := m.textarea.Value()
+		// Use plaintext for history so identical content doesn't create duplicate versions,
+		// even when encryption uses random IV/salt.
+		plaintext := m.textarea.Value()
+
+		// Save a version only if content actually changed (hash check is inside SaveNoteVersion).
+		_ = m.db.SaveNoteVersion(m.currentNote.ID, m.currentNote.Title, plaintext, m.currentNote.Tags)
+
+		// Encrypt for storage if needed.
+		content := plaintext
 		if m.encryptor != nil {
-			encrypted, err := m.encryptor.Encrypt(content)
+			encrypted, err := m.encryptor.Encrypt(plaintext)
 			if err != nil {
 				return errMsg(err)
 			}
