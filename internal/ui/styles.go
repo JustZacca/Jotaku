@@ -75,4 +75,24 @@ var (
 				Background(highlight).
 				Padding(0, 2).
 				Margin(0, 1)
+
+	// List & key hint styling (for a more "lazygit-like" look)
+	ListItemStyle = lipgloss.NewStyle().
+			Padding(0, 1)
+
+	SelectedListItemStyle = ListItemStyle.Copy().
+				Background(highlight).
+				Foreground(lipgloss.Color("#000000"))
+
+	KeyStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(highlight)
+
+	KeyHintStyle = lipgloss.NewStyle().
+			Foreground(muted)
+)
+
+const (
+	FolderIcon = "📁"
+	NoteIcon   = "📝"
 )

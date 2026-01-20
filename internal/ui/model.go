@@ -95,6 +95,7 @@ type Model struct {
 	// History state
 	noteVersions  []db.NoteVersion
 	versionCursor int
+	historyOffset int
 
 	// Folder/Password state
 	currentFolder      int64      // 0 = root
@@ -458,7 +459,7 @@ func (m Model) handleNormalKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.Down):
 		if m.activePanel == PanelList && m.cursor < len(m.notes)-1 {
 			m.cursor++
-			listHeight := m.contentHeight() - 2
+			listHeight := m.listVisibleHeight()
 			if m.cursor >= m.listOffset+listHeight {
 				m.listOffset = m.cursor - listHeight + 1
 			}
@@ -762,10 +763,17 @@ func (m Model) handleHistoryKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.Up):
 		if m.versionCursor > 0 {
 			m.versionCursor--
+			if m.versionCursor < m.historyOffset {
+				m.historyOffset = m.versionCursor
+			}
 		}
 	case key.Matches(msg, m.keys.Down):
 		if m.versionCursor < len(m.noteVersions)-1 {
 			m.versionCursor++
+			listHeight := m.listVisibleHeight()
+			if m.versionCursor >= m.historyOffset+listHeight {
+				m.historyOffset = m.versionCursor - listHeight + 1
+			}
 		}
 	case key.Matches(msg, m.keys.Enter):
 		if len(m.noteVersions) > 0 {
@@ -775,6 +783,7 @@ func (m Model) handleHistoryKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case key.Matches(msg, m.keys.Escape), key.Matches(msg, m.keys.GoToList):
 		m.mode = ModeNormal
 		m.activePanel = PanelList
+		m.historyOffset = 0
 		if m.currentNote != nil {
 			return m, m.loadNote(m.currentNote.ID)
 		}
@@ -962,6 +971,16 @@ func (m Model) contentHeight() int {
 	return m.height - 5
 }
 
+// listVisibleHeight returns how many rows we can draw in the left list panel.
+// It must stay in sync with the rendering logic to keep scrolling correct.
+func (m Model) listVisibleHeight() int {
+	h := m.contentHeight() - 2
+	if h < 1 {
+		return 1
+	}
+	return h
+}
+
 func (m Model) View() string {
 	t := i18n.T()
 
@@ -1031,26 +1050,26 @@ func (m Model) renderList() string {
 	}
 
 	var items []string
-	listHeight := m.contentHeight() - 2
+	listHeight := m.listVisibleHeight()
 
 	lineWidth := m.listWidth() - 4
 	for i := m.listOffset; i < len(m.notes) && i < m.listOffset+listHeight; i++ {
 		note := m.notes[i]
-		// Truncate title to fit with padding
-		maxLen := lineWidth - 6
-		title := truncate(note.Title, maxLen)
+		// Icon + title, same base style for alignment
+		icon := NoteIcon
+		titleText := truncate(note.Title, lineWidth-6)
+		if note.Type == "folder" {
+			icon = FolderIcon
+		}
+
+		lineContent := fmt.Sprintf(" %s %s", icon, titleText)
 
 		if i == m.cursor {
-			// Highlight selected item with arrow indicator
-			line := fmt.Sprintf(" → %-*s ", maxLen, title)
-			line = lipgloss.NewStyle().
-				Width(lineWidth).
-				Background(highlight).
-				Foreground(lipgloss.Color("#000000")).
-				Render(line)
+			// Highlight selected item with dedicated style
+			line := SelectedListItemStyle.Width(lineWidth).Render(lineContent)
 			items = append(items, line)
 		} else {
-			line := fmt.Sprintf("   %-*s ", maxLen, title)
+			line := ListItemStyle.Width(lineWidth).Render(lineContent)
 			items = append(items, line)
 		}
 	}
@@ -1151,7 +1170,8 @@ func (m Model) renderStatus() string {
 		modeStr = t.ModeSearch
 	}
 
-	left := fmt.Sprintf(" %s | %d %s", modeStr, len(m.notes), t.Notes)
+	modeBadge := TagStyle.Render(modeStr)
+	left := fmt.Sprintf(" %s | %d %s", modeBadge, len(m.notes), t.Notes)
 	if m.currentReadOnly {
 		left += " | " + ErrorStyle.Render(t.ReadOnly)
 	}
@@ -1177,14 +1197,30 @@ func (m Model) renderStatus() string {
 		}
 	}
 
-	right := fmt.Sprintf("Ctrl+H %s | Ctrl+Q %s", t.Help, t.Exit)
+	helpSegment := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		KeyStyle.Render("Ctrl+H"),
+		KeyHintStyle.Render(" "+t.Help),
+	)
+	quitSegment := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		KeyStyle.Render("Ctrl+Q"),
+		KeyHintStyle.Render(" "+t.Exit),
+	)
+	right := lipgloss.JoinHorizontal(lipgloss.Left, helpSegment, KeyHintStyle.Render(" | "), quitSegment)
 	if m.dirty {
-		right = "* " + t.Unsaved + " | " + right
+		unsaved := KeyHintStyle.Render("* " + t.Unsaved)
+		right = lipgloss.JoinHorizontal(lipgloss.Left, unsaved, KeyHintStyle.Render(" | "), right)
 	}
 
 	// Add backspace hint when in a folder
 	if m.currentFolder != 0 {
-		right = "Backspace ← | " + right
+		back := lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			KeyStyle.Render("Backspace"),
+			KeyHintStyle.Render(" ←"),
+		)
+		right = lipgloss.JoinHorizontal(lipgloss.Left, back, KeyHintStyle.Render(" | "), right)
 	}
 
 	padding := m.width - lipgloss.Width(left) - lipgloss.Width(right) - 2
@@ -1345,9 +1381,11 @@ func (m Model) renderHistory() string {
 }
 
 func (m Model) renderHistoryBody() string {
-	// Left panel: list of versions
+	// Left panel: list of versions (scrollable)
 	var items []string
-	for i, version := range m.noteVersions {
+	listHeight := m.listVisibleHeight()
+	for i := m.historyOffset; i < len(m.noteVersions) && i < m.historyOffset+listHeight; i++ {
+		version := m.noteVersions[i]
 		line := fmt.Sprintf("%s %s", version.Hash, version.CreatedAt.Format("15:04"))
 		if i == m.versionCursor {
 			line = SelectedStyle.Render("> " + line)
@@ -1357,13 +1395,11 @@ func (m Model) renderHistoryBody() string {
 		items = append(items, line)
 	}
 
-	// Ensure minimum height
-	listHeight := m.contentHeight() - 2
 	for len(items) < listHeight {
 		items = append(items, "")
 	}
 
-	listContent := strings.Join(items[:min(len(items), listHeight)], "\n")
+	listContent := strings.Join(items, "\n")
 	listPanel := PanelStyle.Width(25).Height(m.contentHeight()).Render(listContent)
 
 	// Center panel: preview of selected version
