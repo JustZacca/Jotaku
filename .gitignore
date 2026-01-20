@@ -1,0 +1,69 @@
+# Binaries
+jotaku
+jotaku.exe
+jotaku-server
+jotaku-server.exe
+notes
+notes.exe
+notes-server
+notes-server.exe
+server
+client
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build output
+/bin/
+/dist/
+/build/
+
+# Go build cache
+*.o
+*.a
+*.test
+
+# Config and database (user data)
+config.yml
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.*
+!.env.example
+docker/.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Debug
+*.log
+debug/
+*.prof
+
+# Test coverage
+coverage.out
+coverage.html
+*.coverprofile
+
+# Vendor (if not committing)
+# /vendor/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
