@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  notes-server:
+  jotaku-server:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     volumes:
-      - notes-data:/data
+      - jotaku-data:/data
     environment:
-      - DB_PATH=/data/notes.db
-      - JWT_SECRET=$11221348
+      - DB_PATH=/data/jotaku.db
+      - JWT_SECRET=${JWT_SECRET}
       - PORT=8080
     restart: unless-stopped
     healthcheck:
@@ -22,4 +22,4 @@ services:
       start_period: 10s
 
 volumes:
-  notes-data:
+  jotaku-data:
