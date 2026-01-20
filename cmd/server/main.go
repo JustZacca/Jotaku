@@ -8,9 +8,9 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/nzaccagnino/go-notes/internal/auth"
-	"github.com/nzaccagnino/go-notes/internal/db"
-	"github.com/nzaccagnino/go-notes/internal/server"
+	"github.com/JustZacca/jotaku/internal/auth"
+	"github.com/JustZacca/jotaku/internal/db"
+	"github.com/JustZacca/jotaku/internal/server"
 )
 
 func main() {

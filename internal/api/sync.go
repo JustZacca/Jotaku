@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/nzaccagnino/go-notes/internal/db"
+	"github.com/JustZacca/jotaku/internal/db"
 )
 
 type SyncResult struct {

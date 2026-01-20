@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/nzaccagnino/go-notes/internal/i18n"
+	"github.com/JustZacca/jotaku/internal/i18n"
 )
 
 type KeyMap struct {

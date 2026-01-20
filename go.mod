@@ -1,4 +1,4 @@
-module github.com/nzaccagnino/go-notes
+module github.com/JustZacca/jotaku
 
 go 1.22
 

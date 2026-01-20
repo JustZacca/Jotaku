@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/nzaccagnino/go-notes/internal/api"
-	"github.com/nzaccagnino/go-notes/internal/config"
-	"github.com/nzaccagnino/go-notes/internal/crypto"
-	"github.com/nzaccagnino/go-notes/internal/db"
-	"github.com/nzaccagnino/go-notes/internal/i18n"
-	"github.com/nzaccagnino/go-notes/internal/ui"
+	"github.com/JustZacca/jotaku/internal/api"
+	"github.com/JustZacca/jotaku/internal/config"
+	"github.com/JustZacca/jotaku/internal/crypto"
+	"github.com/JustZacca/jotaku/internal/db"
+	"github.com/JustZacca/jotaku/internal/i18n"
+	"github.com/JustZacca/jotaku/internal/ui"
 	"golang.org/x/term"
 )
 

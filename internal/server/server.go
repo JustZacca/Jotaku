@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/nzaccagnino/go-notes/internal/auth"
-	"github.com/nzaccagnino/go-notes/internal/db"
+	"github.com/JustZacca/jotaku/internal/auth"
+	"github.com/JustZacca/jotaku/internal/db"
 )
 
 type Server struct {

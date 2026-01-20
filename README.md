@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nzaccagnino/jotaku/main/assets/logo.png" alt="Jotaku Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/JustZacca/jotaku/main/assets/logo.png" alt="Jotaku Logo" width="200"/>
 </p>
 
 <h1 align="center">Jotaku</h1>
@@ -53,7 +53,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/nzaccagnino/jotaku.git
+git clone https://github.com/JustZacca/jotaku.git
 cd jotaku
 
 # Build the client
@@ -69,7 +69,7 @@ sudo mv jotaku /usr/local/bin/
 ### Using Go Install
 
 ```bash
-go install github.com/nzaccagnino/jotaku/cmd/client@latest
+go install github.com/JustZacca/jotaku/cmd/client@latest
 ```
 
 ## Usage
@@ -83,7 +83,7 @@ jotaku
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nzaccagnino/jotaku/main/assets/screenshot.png" alt="Jotaku Screenshot" width="800"/>
+  <img src="https://raw.githubusercontent.com/JustZacca/jotaku/main/assets/screenshot.png" alt="Jotaku Screenshot" width="800"/>
 </p>
 
 ## Keyboard Shortcuts

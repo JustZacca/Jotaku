@@ -10,11 +10,11 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/nzaccagnino/go-notes/internal/api"
-	"github.com/nzaccagnino/go-notes/internal/config"
-	"github.com/nzaccagnino/go-notes/internal/crypto"
-	"github.com/nzaccagnino/go-notes/internal/db"
-	"github.com/nzaccagnino/go-notes/internal/i18n"
+	"github.com/JustZacca/jotaku/internal/api"
+	"github.com/JustZacca/jotaku/internal/config"
+	"github.com/JustZacca/jotaku/internal/crypto"
+	"github.com/JustZacca/jotaku/internal/db"
+	"github.com/JustZacca/jotaku/internal/i18n"
 )
 
 // formatBytes converts bytes to human-readable format (B, KB, MB, GB)
@@ -214,17 +214,22 @@ func (m Model) loadNotes() tea.Cmd {
 			}
 		}
 
+		// Add N- prefix to notes
+		for i := range notes {
+			notes[i].Title = "N- " + notes[i].Title
+		}
+
 		// Load folders for current folder
 		folders, err := m.db.ListFolders(m.currentFolder)
 		if err != nil {
 			return errMsg(err)
 		}
 
-		// Add folders to notes list with @ prefix
+		// Add folders to notes list with D- prefix
 		for _, f := range folders {
 			folderItem := db.NoteListItem{
 				ID:    f.ID,
-				Title: "@" + f.Title, // @ prefix indicates folder
+				Title: "D- " + f.Title,
 				Type:  "folder",
 			}
 			notes = append(notes, folderItem)
@@ -1017,22 +1022,24 @@ func (m Model) renderList() string {
 	var items []string
 	listHeight := m.contentHeight() - 2
 
+	lineWidth := m.listWidth() - 4
 	for i := m.listOffset; i < len(m.notes) && i < m.listOffset+listHeight; i++ {
 		note := m.notes[i]
 		// Truncate title to fit with padding
-		maxLen := m.listWidth() - 10
+		maxLen := lineWidth - 6
 		title := truncate(note.Title, maxLen)
 
 		if i == m.cursor {
-			// Highlight selected item with full background color
-			line := fmt.Sprintf("  ▶ %-*s  ", maxLen, title)
+			// Highlight selected item with arrow indicator
+			line := fmt.Sprintf(" → %-*s ", maxLen, title)
 			line = lipgloss.NewStyle().
+				Width(lineWidth).
 				Background(highlight).
 				Foreground(lipgloss.Color("#000000")).
 				Render(line)
 			items = append(items, line)
 		} else {
-			line := fmt.Sprintf("    %-*s  ", maxLen, title)
+			line := fmt.Sprintf("   %-*s ", maxLen, title)
 			items = append(items, line)
 		}
 	}
