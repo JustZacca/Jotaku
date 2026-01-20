@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  notes-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - notes-data:/data
+    environment:
+      - DB_PATH=/data/notes.db
+      - JWT_SECRET=$11221348
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  notes-data:

@@ -1,0 +1,31 @@
+# ┏┓┏┓┏┳┓┏┓┓┏┓ ┓
+# ┃┃┃┃ ┃ ┣┫┣┫┃ ┃
+# ┗┛┗┛ ┻ ┛┗┛┗┗┛┗┛
+#
+# Jotaku Configuration
+# Copy this file to config.yml
+
+# Language: "it" (Italian) or "en" (English)
+language: en
+
+# Database file path (relative or absolute)
+# Default: jotaku.db (same folder as executable)
+db_path: ""
+
+# Theme: "dark" or "light"
+theme: dark
+
+# Auto-save interval (e.g., "3s", "5s", "10s")
+auto_save_interval: 3s
+
+# Server sync configuration (optional)
+# For auto-login to work:
+# 1. Set enabled: true
+# 2. Set url to your server
+# 3. Set username to your account
+# 4. Token will be saved automatically after first successful login
+server:
+  enabled: false
+  url: "http://localhost:8080"
+  username: ""
+  # token: ""  # Auto-generated after login, don't edit manually
