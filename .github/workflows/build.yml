@@ -16,6 +16,8 @@ jobs:
   build:
     name: Build Binaries
     runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: local
 
     steps:
       - name: Checkout
@@ -24,7 +26,10 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
+
+      - name: Download dependencies
+        run: go mod download
 
       - name: Build Linux (amd64)
         run: |
@@ -107,9 +112,76 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Create release with binaries (only on tags)
+  # Create release with downloadable binaries
   release:
     name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jotaku-binaries
+          path: dist/
+
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Delete existing latest release
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: latest
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: true
+        continue-on-error: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: "Latest Build (${{ steps.sha.outputs.short }})"
+          body: |
+            ## Jotaku - Latest Build
+
+            Commit: ${{ github.sha }}
+
+            ### Downloads
+
+            | Platform | Client | Server |
+            |----------|--------|--------|
+            | Windows (64-bit) | `jotaku-windows-amd64.exe` | `jotaku-server-windows-amd64.exe` |
+            | Linux (64-bit) | `jotaku-linux-amd64` | `jotaku-server-linux-amd64` |
+            | Linux (ARM64) | `jotaku-linux-arm64` | `jotaku-server-linux-arm64` |
+            | macOS (Intel) | `jotaku-macos-amd64` | `jotaku-server-macos-amd64` |
+            | macOS (Apple Silicon) | `jotaku-macos-arm64` | `jotaku-server-macos-arm64` |
+
+            ### Quick Start
+            1. Download the client for your platform
+            2. Download `config.example.yml` and rename to `config.yml`
+            3. Run the client
+          files: |
+            dist/jotaku-linux-amd64
+            dist/jotaku-linux-arm64
+            dist/jotaku-windows-amd64.exe
+            dist/jotaku-macos-amd64
+            dist/jotaku-macos-arm64
+            dist/jotaku-server-linux-amd64
+            dist/jotaku-server-linux-arm64
+            dist/jotaku-server-windows-amd64.exe
+            dist/jotaku-server-macos-amd64
+            dist/jotaku-server-macos-arm64
+            dist/config.example.yml
+          prerelease: false
+          make_latest: true
+
+  # Create versioned release (only on tags)
+  versioned-release:
+    name: Create Versioned Release
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
@@ -123,25 +195,19 @@ jobs:
           name: jotaku-binaries
           path: dist/
 
-      - name: Create archives
-        run: |
-          cd dist
-          # Linux
-          tar -czvf jotaku-linux-amd64.tar.gz jotaku-linux-amd64 jotaku-server-linux-amd64 config.example.yml
-          tar -czvf jotaku-linux-arm64.tar.gz jotaku-linux-arm64 jotaku-server-linux-arm64 config.example.yml
-          # macOS
-          tar -czvf jotaku-macos-amd64.tar.gz jotaku-macos-amd64 jotaku-server-macos-amd64 config.example.yml
-          tar -czvf jotaku-macos-arm64.tar.gz jotaku-macos-arm64 jotaku-server-macos-arm64 config.example.yml
-          # Windows
-          zip jotaku-windows-amd64.zip jotaku-windows-amd64.exe jotaku-server-windows-amd64.exe config.example.yml
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/jotaku-linux-amd64.tar.gz
-            dist/jotaku-linux-arm64.tar.gz
-            dist/jotaku-macos-amd64.tar.gz
-            dist/jotaku-macos-arm64.tar.gz
-            dist/jotaku-windows-amd64.zip
+            dist/jotaku-linux-amd64
+            dist/jotaku-linux-arm64
+            dist/jotaku-windows-amd64.exe
+            dist/jotaku-macos-amd64
+            dist/jotaku-macos-arm64
+            dist/jotaku-server-linux-amd64
+            dist/jotaku-server-linux-arm64
+            dist/jotaku-server-windows-amd64.exe
+            dist/jotaku-server-macos-amd64
+            dist/jotaku-server-macos-arm64
+            dist/config.example.yml
           generate_release_notes: true
