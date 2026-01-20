@@ -58,7 +58,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: jotaku-binaries
+          name: jotaku-binaries-unix
           path: dist/
           retention-days: 30
 
@@ -91,7 +91,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: jotaku-binaries
+          name: jotaku-binaries-windows
           path: dist/
           retention-days: 30
 
@@ -153,10 +153,16 @@ jobs:
       contents: write
 
     steps:
-      - name: Download artifacts
+      - name: Download artifacts (unix)
         uses: actions/download-artifact@v4
         with:
-          name: jotaku-binaries
+          name: jotaku-binaries-unix
+          path: dist/
+
+      - name: Download artifacts (windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: jotaku-binaries-windows
           path: dist/
 
       - name: Get short SHA
@@ -222,10 +228,16 @@ jobs:
       contents: write
 
     steps:
-      - name: Download artifacts
+      - name: Download artifacts (unix)
         uses: actions/download-artifact@v4
         with:
-          name: jotaku-binaries
+          name: jotaku-binaries-unix
+          path: dist/
+
+      - name: Download artifacts (windows)
+        uses: actions/download-artifact@v4
+        with:
+          name: jotaku-binaries-windows
           path: dist/
 
       - name: Create Release
